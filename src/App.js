@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from 'firebase/auth'
 import './App.css';
 import initializeAuthentication from './Firebase/FirebaseInitialize';
 
@@ -10,6 +10,7 @@ initializeAuthentication()
 function App() {
   const [userInfo, setUserInfo] = useState({})
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isRegistered, setIsRegistered] = useState(false)
@@ -51,6 +52,10 @@ function App() {
     setPassword(e.target.value);
   }
 
+  const handleNameChanged = (e) => {
+    setName(e.target.value);
+  }
+
   const handleIsRegistered = (e) => {
     setIsRegistered(e.target.checked);
   }
@@ -84,6 +89,7 @@ function App() {
     createUserWithEmailAndPassword(auth, email, password)
       .then(result => {
         console.log(result.user);
+        setUserName()
         setError('')
         verifyEmail()
       })
@@ -115,6 +121,10 @@ function App() {
 
       }).catch(err => setError(err.message))
   }
+  const setUserName = () => {
+    updateProfile(auth.currentUser, { displayName: name })
+      .then(() => { }).catch(err => setError(err.message))
+  }
 
   return (
     <div className="App">
@@ -122,6 +132,12 @@ function App() {
       <div className=' '>
         <form onSubmit={handleRegistration} className='w-50 mt-5  from'>
           <h3 className='text-primary mb-3'>Please {isRegistered ? 'Login' : 'Register'}</h3>
+          {!isRegistered && <div className="row mb-3">
+            <label htmlFor="inputName" className="col-sm-2 col-form-label">Name</label>
+            <div className="col-sm-10">
+              <input onBlur={handleNameChanged} type="text" placeholder='Your name' className="form-control" id="inputName" />
+            </div>
+          </div>}
           <div className="row mb-3">
             <label htmlFor="inputEmail3" className="col-sm-2 col-form-label">Email</label>
             <div className="col-sm-10">
