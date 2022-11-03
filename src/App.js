@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import './App.css';
 import initializeAuthentication from './Firebase/FirebaseInitialize';
 
@@ -12,6 +12,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isRegistered, setIsRegistered] = useState(false)
   const auth = getAuth()
 
   const handleGoogleSignIn = () => {
@@ -50,6 +51,10 @@ function App() {
     setPassword(e.target.value);
   }
 
+  const handleIsRegistered = (e) => {
+    setIsRegistered(e.target.checked);
+  }
+
   const handleSubmit = () => {
     // console.log(email, password);
     if (password.length < 6) {
@@ -72,6 +77,10 @@ function App() {
       setError('Ensure string has three lowercase letters.');
       return
     }
+    isRegistered ? login(email, password) : createNewUser(email, password)
+
+  }
+  const createNewUser = (email, password) => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(result => {
         console.log(result.user);
@@ -80,14 +89,22 @@ function App() {
       .catch(error => {
         setError(error.message);
       })
+  }
 
+  const login = (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then(result => {
+        console.log(result.user);
+      }).catch(error => {
+        setError(error.message)
+      })
   }
   return (
     <div className="App">
 
       <div className=' '>
         <form onSubmit={handleRegistration} className='w-50 mt-5  from'>
-          <h3 className='text-primary mb-3'>Please Register</h3>
+          <h3 className='text-primary mb-3'>Please {isRegistered ? 'Login' : 'Register'}</h3>
           <div className="row mb-3">
             <label htmlFor="inputEmail3" className="col-sm-2 col-form-label">Email</label>
             <div className="col-sm-10">
@@ -107,14 +124,14 @@ function App() {
           <div className="row mb-3">
             <div className="col-sm-10 offset-sm-2">
               <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="gridCheck1" />
+                <input onChange={handleIsRegistered} className="form-check-input" type="checkbox" id="gridCheck1" />
                 <label className="form-check-label" htmlFor="gridCheck1">
-                  Example checkbox
+                  Already Registered
                 </label>
               </div>
             </div>
           </div>
-          <button onClick={handleSubmit} type="submit" className="btn btn-primary">Register</button>
+          <button onClick={handleSubmit} type="submit" className="btn btn-primary">{isRegistered ? 'Login' : 'Register'}</button>
         </form>
       </div>
       <br /><br /><br /><br />
