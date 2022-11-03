@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, FacebookAuthProvider } from 'firebase/auth'
 import './App.css';
 import initializeAuthentication from './Firebase/FirebaseInitialize';
 
 const googleProvider = new GoogleAuthProvider()
 const githubProvider = new GithubAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 initializeAuthentication()
 function App() {
@@ -31,6 +32,16 @@ function App() {
         const { displayName, photoURL, } = result.user;
         const userDetails = { name: displayName, img: photoURL };
         setUserInfo(userDetails);
+      })
+  }
+
+  const handleFacebookSignIn = () => {
+    signInWithPopup(auth, facebookProvider)
+      .then(result => {
+        const { displayName, photoURL, } = result.user;
+        const userDetails = { name: displayName, img: photoURL };
+        setUserInfo(userDetails);
+        console.log(result.user);
       })
   }
 
@@ -175,6 +186,7 @@ function App() {
           !userInfo.name ?
             <div>
               <button className='btn btn-primary me-2' onClick={handleGoogleSignIn}>Google Sign In</button>
+              <button className='btn btn-primary me-2' onClick={handleFacebookSignIn}>Facebook Sign In</button>
               <button className='btn btn-primary' onClick={handleGithubSignIn}>Github Sign In</button>
             </div> :
             <button className='btn btn-primary' onClick={handleSignOut}>Sign Out</button>}
