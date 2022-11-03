@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth'
 import './App.css';
 import initializeAuthentication from './Firebase/FirebaseInitialize';
 
@@ -77,7 +77,7 @@ function App() {
       setError('Ensure string has three lowercase letters.');
       return
     }
-    isRegistered ? login(email, password) : createNewUser(email, password)
+    isRegistered ? processLogin(email, password) : createNewUser(email, password)
 
   }
   const createNewUser = (email, password) => {
@@ -85,13 +85,15 @@ function App() {
       .then(result => {
         console.log(result.user);
         setError('')
+        verifyEmail()
       })
       .catch(error => {
         setError(error.message);
       })
+
   }
 
-  const login = (email, password) => {
+  const processLogin = (email, password) => {
     signInWithEmailAndPassword(auth, email, password)
       .then(result => {
         console.log(result.user);
@@ -99,6 +101,21 @@ function App() {
         setError(error.message)
       })
   }
+  const verifyEmail = () => {
+    sendEmailVerification(auth.currentUser)
+      .then((result) => {
+        console.log(result);
+      }).catch(err => {
+        setError(err.message)
+      })
+  }
+  const resetPassword = (email) => {
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+
+      }).catch(err => setError(err.message))
+  }
+
   return (
     <div className="App">
 
@@ -132,6 +149,7 @@ function App() {
             </div>
           </div>
           <button onClick={handleSubmit} type="submit" className="btn btn-primary">{isRegistered ? 'Login' : 'Register'}</button>
+          {isRegistered && <button className='btn btn-sm btn-dark' onClick={() => resetPassword(email)}>Reset Password</button>}
         </form>
       </div>
       <br /><br /><br /><br />
