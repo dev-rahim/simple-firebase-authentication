@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, signOut, createUserWithEmailAndPassword } from 'firebase/auth'
 import './App.css';
 import initializeAuthentication from './Firebase/FirebaseInitialize';
 
@@ -11,9 +11,10 @@ function App() {
   const [userInfo, setUserInfo] = useState({})
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const auth = getAuth()
 
   const handleGoogleSignIn = () => {
-    const auth = getAuth()
     signInWithPopup(auth, googleProvider)
       .then(result => {
         const { displayName, email, photoURL, } = result.user;
@@ -23,7 +24,6 @@ function App() {
   }
 
   const handleGithubSignIn = () => {
-    const auth = getAuth();
     signInWithPopup(auth, githubProvider)
       .then(result => {
         const { displayName, photoURL, } = result.user;
@@ -33,7 +33,6 @@ function App() {
   }
 
   const handleSignOut = () => {
-    const auth = getAuth()
     signOut(auth).then(() => {
       setUserInfo({})
     })
@@ -52,7 +51,36 @@ function App() {
   }
 
   const handleSubmit = () => {
-    console.log(email, password);
+    // console.log(email, password);
+    if (password.length < 6) {
+      setError('password must be at least 6 letter long');
+      return
+    }
+    if (!/(?=.*[A-Z].*[A-Z])/.test(password)) {
+      setError('Ensure string has two uppercase letters.');
+      return
+    }
+    if (!/(?=.*[!@#$&*])/.test(password)) {
+      setError('Ensure string has one special case letter.');
+      return
+    }
+    if (!/(?=.*[0-9].*[0-9])/.test(password)) {
+      setError('Ensure string has two digits.');
+      return
+    }
+    if (!/(?=.*[a-z].*[a-z].*[a-z])/.test(password)) {
+      setError('Ensure string has three lowercase letters.');
+      return
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(result => {
+        console.log(result.user);
+        setError('')
+      })
+      .catch(error => {
+        setError(error.message);
+      })
+
   }
   return (
     <div className="App">
@@ -70,6 +98,9 @@ function App() {
             <label htmlFor="inputPassword3" className="col-sm-2 col-form-label">Password</label>
             <div className="col-sm-10">
               <input onBlur={handlePasswordChanged} type="password" className="form-control" id="inputPassword3" />
+              {
+                error && <p className='text-danger'>{error}</p>
+              }
             </div>
           </div>
 
